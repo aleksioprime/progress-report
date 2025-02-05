@@ -1,0 +1,49 @@
+x-app: &app
+  env_file:
+    - ./.env
+  restart: always
+  platform: linux/amd64
+  networks:
+    - skolstream_network
+
+services:
+  redis:
+    image: redis:6
+    container_name: report-redis
+    <<: *app
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_volume:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ./app
+    container_name: report-app
+    <<: *app
+    volumes:
+      - ./app:/usr/src/app/
+    ports:
+      - "8123:8000"
+
+  ollama:
+    image: ollama/ollama
+    container_name: report-ollama
+    <<: *app
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama:/root/.ollama
+    restart: always
+
+volumes:
+  redis_volume:
+
+networks:
+  skolstream_network:
+    external: true
