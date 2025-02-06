@@ -19,4 +19,5 @@ class ReportResponse(BaseModel):
     result: str = Field(..., description="Сгенерированный отзыв о студенте")
     prompt_tokens: int = Field(..., description="Количество входных (запросных) токенов")
     completion_tokens: int = Field(..., description="Количество выходных (ответных) токенов")
-    cost_usd: float = Field(..., description="Стоимость запроса в долларах США")
+    cost: float = Field(..., description="Стоимость запроса в долларах США")
+    currency: str = Field(..., description="Валюта")

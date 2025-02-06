@@ -82,3 +82,20 @@ async def generate_qwen_report(
     """
     report = await service.generate_report(feedback, provider="qwen")
     return report
+
+
+@router.post(
+    path="/generate/yandexgpt",
+    summary="Генерировать отчет с YandexGPT",
+    response_model=ReportResponse,
+)
+async def generate_qwen_report(
+    feedback: FeedbackRequest,
+    user: Annotated[dict, Depends(get_current_user)],
+    service: ReportResponse = Depends(get_report_service),
+) -> ReportResponse:
+    """
+    Возвращает сгенерированный текст отчета на основе входных данных
+    """
+    report = await service.generate_report(feedback, provider="yandexgpt")
+    return report

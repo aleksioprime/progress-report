@@ -7,6 +7,25 @@ x-app: &app
     - skolstream_network
 
 services:
+  postgres:
+    image: postgres:14
+    container_name: report-postgres
+    <<: *app
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+    environment:
+      TZ: "Europe/Moscow"
+      PGTZ: "Europe/Moscow"
+
   redis:
     image: redis:6
     container_name: report-redis
@@ -30,6 +49,11 @@ services:
       - ./app:/usr/src/app/
     ports:
       - "8123:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
 
   ollama:
     image: ollama/ollama
@@ -39,9 +63,9 @@ services:
       - "11434:11434"
     volumes:
       - ./ollama:/root/.ollama
-    restart: always
 
 volumes:
+  postgres_volume:
   redis_volume:
 
 networks:

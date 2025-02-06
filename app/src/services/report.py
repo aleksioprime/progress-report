@@ -1,6 +1,7 @@
 import httpx
 from fastapi import HTTPException
 from openai import OpenAI
+from yandex_cloud_ml_sdk import YCloudML
 
 from src.core.config import settings
 from src.schemas.report import FeedbackRequest, ReportResponse
@@ -30,6 +31,9 @@ class ReportService:
         elif provider in {"deepseek", "chatgpt", "qwen"}:
             return await self._generate_openai_model(prompt, provider)
 
+        elif provider == "yandexgpt":
+            return await self._generate_yandexgpt(prompt)
+
         else:
             raise HTTPException(status_code=400, detail="Неподдерживаемый провайдер AI")
 
@@ -51,7 +55,8 @@ class ReportService:
                 result=result_text,
                 prompt_tokens=0,
                 completion_tokens=0,
-                cost_usd=0.0,
+                cost=0.0,
+                currency='-'
                 )
 
         except httpx.HTTPError as e:
@@ -96,11 +101,49 @@ class ReportService:
                 result=result_text,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
-                cost_usd=cost,
+                cost=cost,
+                currency=config.currency
             )
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Ошибка при запросе к {provider.capitalize()}: {str(e)}")
+
+    async def _generate_yandexgpt(self, prompt: str) -> ReportResponse:
+        """
+        Генерирует отчет с помощью YandexGPT и рассчитывает стоимость.
+        """
+        config = settings.yandexgpt
+        sdk = YCloudML(folder_id=config.folder_id, auth=config.api_key)
+
+        messages = [
+            {"role": "system", "text": "Ты учитель и пишешь краткие и конструктивные отзывы о студентах."},
+            {"role": "user", "text": prompt},
+        ]
+
+        try:
+            result = sdk.models.completions(config.model).configure(temperature=0.5).run(messages)
+
+            if not result or not result[0].text:
+                raise HTTPException(status_code=500, detail="Ошибка: пустой ответ от YandexGPT")
+
+            response_text = result[0].text.strip()
+
+            prompt_tokens = len(prompt.split())
+            completion_tokens = len(response_text.split())
+            total_tokens = prompt_tokens + completion_tokens
+            units = total_tokens * config.unit_per_token
+            cost = (config.price_per_1k / 1000) * units
+
+            return ReportResponse(
+                status="ok",
+                result=response_text,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                cost=round(cost, 6),
+                currency=config.currency
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Ошибка при запросе к YandexGPT: {str(e)}")
 
     def _calculate_cost(self, prompt_tokens: int, completion_tokens: int, price_it_per_1m: float, price_ot_per_1m: float) -> float:
         """

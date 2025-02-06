@@ -7,3 +7,4 @@ pyJWT==2.10.0
 httpx==0.28.1
 backoff==2.2.1
 openai==1.61.1
+yandex-cloud-ml-sdk==0.3.0

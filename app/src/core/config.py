@@ -12,11 +12,32 @@ from pydantic_settings import BaseSettings
 load_dotenv()
 
 
+class DBSettings(BaseSettings):
+    """
+    Конфигурация для настроек базы данных
+    """
+    name: str = Field(alias='DB_NAME', default='report')
+    user: str = Field(alias='DB_USER', default='admin')
+    password: str = Field(alias='DB_PASSWORD', default='123qwe')
+    host: str = Field(alias='DB_HOST', default='127.0.0.1')
+    port: int = Field(alias='DB_PORT', default=5432)
+    show_query: bool = Field(alias='SHOW_SQL_QUERY', default=False)
+
+    @property
+    def _base_url(self) -> str:
+        """ Формирует базовый URL для подключения к базе данных """
+        return f"{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+
+    @property
+    def dsn(self) -> str:
+        """ Формирует DSN строку для подключения к базе данных с использованием asyncpg """
+        return f"postgresql+asyncpg://{self._base_url}"
+
+
 class RedisSettings(BaseSettings):
     """
     Конфигурация для настроек Redis
     """
-
     host: str = Field(alias='REDIS_HOST', default='127.0.0.1')
     port: int = Field(alias='REDIS_PORT', default=6379)
 
@@ -30,6 +51,7 @@ class SkolStreamSettings(BaseSettings):
     @property
     def verify_url(self):
         return f"{self.base_url}/api/token/verify/"
+
 
 class OllamaSettings(BaseSettings):
     """
@@ -46,6 +68,7 @@ class DeepSeekSettings(BaseSettings):
     api_key: str = Field(alias='DEEPSEEK_API_KEY', default='')
     base_url: str = Field(alias='DEEPSEEK_BASE_URL', default='https://api.deepseek.com')
     model: str = "deepseek-chat"
+    currency: str = "usd"
     price_it_per_1m: float = 0.55
     price_ot_per_1m: float = 2.19
 
@@ -56,6 +79,7 @@ class ChatGPTSettings(BaseSettings):
     """
     api_key: str = Field(alias='CHATGPT_API_KEY', default='')
     model: str = "gpt-4o"
+    currency: str = "usd"
     price_it_per_1m: float = 2.50
     price_ot_per_1m: float = 10.00
 
@@ -67,9 +91,21 @@ class QwenSettings(BaseSettings):
     api_key: str = Field(alias='QWEN_API_KEY', default='')
     base_url: str = Field(alias='QWEN_BASE_URL', default='https://dashscope-intl.aliyuncs.com/compatible-mode/v1')
     model: str = "qwen-plus"
+    currency: str = "usd"
     price_it_per_1m: float = 0.0016 * 1000
     price_ot_per_1m: float = 0.0064 * 1000
 
+
+class YandexGPTSettings(BaseSettings):
+    """
+    Конфигурация для настроек YandexGPT API
+    """
+    api_key: str = Field(alias='YANDEX_API_KEY', default='')
+    folder_id: str = Field(alias='YANDEX_FOLDER_ID', default='')
+    model: str = "yandexgpt"
+    currency: str = "rub"
+    price_per_1k: float = 1.20
+    unit_per_token: float = 6.00
 
 
 class Settings(BaseSettings):
@@ -80,7 +116,9 @@ class Settings(BaseSettings):
     deepseek: DeepSeekSettings = DeepSeekSettings()
     chatgpt: ChatGPTSettings = ChatGPTSettings()
     qwen: QwenSettings = QwenSettings()
+    yandexgpt: YandexGPTSettings = YandexGPTSettings()
     redis: RedisSettings = RedisSettings()
+    db: DBSettings = DBSettings()
     default_host: str = "0.0.0.0"
     default_port: int = 8000
 
