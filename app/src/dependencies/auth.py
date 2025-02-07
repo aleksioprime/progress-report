@@ -14,3 +14,10 @@ async def get_current_user(
     Dependency для получения текущего пользователя через SkolStream API.
     """
     return await auth_service.verify_jwt_token(credentials)
+
+
+def get_auth_service() -> AuthService:
+    """
+    Возвращает экземпляр AuthService
+    """
+    return AuthService()

@@ -4,9 +4,10 @@
 """
 
 from datetime import timedelta
+from typing import List
 
 from dotenv import load_dotenv
-from pydantic import Field
+from pydantic import Field, validator
 from pydantic_settings import BaseSettings
 
 load_dotenv()
@@ -47,6 +48,9 @@ class SkolStreamSettings(BaseSettings):
     Конфигурация для настроек сервиса SkolStream
     """
     base_url: str = Field(alias='SKOLSTREAM_BASE_URL', default='')
+    token_url: str = Field(alias='OAUTH2_TOKEN_URL', default='')
+    client_id: str = Field(alias='CLIENT_ID', default='')
+    client_secret: str = Field(alias='CLIENT_SECRET', default='')
 
     @property
     def verify_url(self):
@@ -111,6 +115,7 @@ class YandexGPTSettings(BaseSettings):
 class Settings(BaseSettings):
     project_name: str = "Progress Report Generator"
     project_description: str = "An application for generating structured progress reports for students."
+
     skolstream: SkolStreamSettings = SkolStreamSettings()
     ollama: OllamaSettings = OllamaSettings()
     deepseek: DeepSeekSettings = DeepSeekSettings()
@@ -119,8 +124,15 @@ class Settings(BaseSettings):
     yandexgpt: YandexGPTSettings = YandexGPTSettings()
     redis: RedisSettings = RedisSettings()
     db: DBSettings = DBSettings()
+
     default_host: str = "0.0.0.0"
     default_port: int = 8000
+    cors_allow_origins_str: str = Field(alias="CORS_ALLOW_ORIGINS", default="")
+
+    @property
+    def cors_allow_origins(self) -> List[str]:
+        """Преобразует строку cors_allow_origins_str в список"""
+        return [origin.strip() for origin in self.cors_allow_origins_str.split(",") if origin.strip()]
 
 
 settings = Settings()

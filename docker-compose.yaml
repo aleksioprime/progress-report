@@ -55,6 +55,25 @@ services:
       postgres:
         condition: service_healthy
 
+  front:
+    build:
+      context: ./front
+      target: dev
+      args:
+        - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+        - VITE_LOGGING=${VITE_LOGGING}
+        - VITE_AUTH_URL=${VITE_AUTH_URL}
+        - VITE_OAUTH_CLIENT_ID=${VITE_OAUTH_CLIENT_ID}
+    <<: *app
+    container_name: report-front
+    volumes:
+      - ./front/app/src:/usr/src/app/src
+    ports:
+      - "8234:5173"
+    depends_on:
+      app:
+        condition: service_started
+
   ollama:
     image: ollama/ollama
     container_name: report-ollama

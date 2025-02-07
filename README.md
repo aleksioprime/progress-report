@@ -37,5 +37,9 @@ cd progress_reports-main
 
 Запустите сервис локально:
 ```
+docker-compose -p report up -d --build
+```
+
+```
 docker-compose -p report -f docker-compose.yaml up -d --build
 ```

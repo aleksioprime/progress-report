@@ -3,13 +3,14 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
 
 from src.db import redis
 from src.core.config import settings
 from src.core.logger import LOGGING
-from src.api.v1 import ping, report
+from src.api.v1 import ping, report, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,10 +34,21 @@ app = FastAPI(
     default_response_class=ORJSONResponse, # Быстрая обработка JSON с ORJSON
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allow_origins,  # Разрешить Vue.js
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешить все методы (GET, POST и т.д.)
+    allow_headers=["*"],  # Разрешить все заголовки
+)
+
+
 # Подключение роутера для проверки доступности сервера
 app.include_router(ping.router, prefix="/api/v1", tags=["ping"])
 # Подключение роутера для работы с генерацией
 app.include_router(report.router, prefix="/api/v1", tags=["generate"])
+# Подключение роутера для работы с авторизацией
+app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
 
 
 # Точка входа в приложение

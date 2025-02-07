@@ -3,10 +3,8 @@
 """
 
 from typing import Annotated
-from uuid import UUID
 
-from fastapi import APIRouter, Depends, Body
-from starlette import status
+from fastapi import APIRouter, Depends
 
 from src.dependencies.report import get_report_service
 from src.dependencies.auth import get_current_user
