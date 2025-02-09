@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 from redis.asyncio import Redis
@@ -6,6 +8,7 @@ from src.db.redis import get_redis
 from src.dependencies.auth import get_current_user
 
 router = APIRouter()
+logger = logging.getLogger("uvicorn.access")
 
 
 @router.get("/ping", status_code=status.HTTP_200_OK)
@@ -13,6 +16,7 @@ async def ping():
     """
     Эндпоинт для проверки работы web-сервера
     """
+    logger.disabled = True
     return {"status": "ok", "message": "Server is up and running"}
 
 

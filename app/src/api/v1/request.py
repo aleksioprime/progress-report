@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get(
-    path='/request/user/{user_id}',
+    path='/requests/user/{user_id}',
     summary='Получить все сохранённые запросы пользователя по его ID',
     response_model=list[RequestSchema],
     status_code=status.HTTP_200_OK,
@@ -33,7 +33,7 @@ async def get_request_by_user(
     return requests
 
 @router.get(
-    path='/request/me',
+    path='/requests/me',
     summary='Получить все сохранённые запросы авторизированного пользователя',
     response_model=list[RequestSchema],
     status_code=status.HTTP_200_OK,
@@ -43,13 +43,13 @@ async def get_request_me(
     user: Annotated[dict, Depends(get_current_user)],
 ) -> list[RequestSchema]:
     """
-    Возвращает список всех покупок авторизированного пользователя
+    Возвращает список всех запросов авторизированного пользователя
     """
     requests = await service.get_by_user(user.user_id)
     return requests
 
 @router.post(
-    path='/request',
+    path='/requests',
     summary='Создать запрос',
     response_model=RequestSchema,
     status_code=status.HTTP_201_CREATED,
@@ -62,29 +62,30 @@ async def create_request(
     """
     Создаёт запрос
     """
-    new_request = await service.create(body, user.user_id)
+    new_request = await service.create(user.user_id, body)
     return new_request
 
 @router.patch(
-    path='/request/{request_id}',
+    path='/requests/{request_id}',
     summary='Обновить существующий запрос',
-    response_model=RequestSchema,
+    response_model=RequestDetailedSchema,
+    status_code=status.HTTP_200_OK,
 )
 async def update_request(
         request_id: UUID,
         body: RequestUpdateSchema,
         service: Annotated[RequestService, Depends(get_request_service)],
         user: Annotated[dict, Depends(get_current_user)],
-) -> RequestSchema:
+) -> RequestDetailedSchema:
     """
-    Обновляет информацию подписке по её ID
+    Обновляет информацию о запросе по его ID
     """
     updated_request = await service.update(request_id, body)
     return updated_request
 
 @router.delete(
-    path='/request/{request_id}',
-    summary='Удалить покупку',
+    path='/requests/{request_id}',
+    summary='Удалить запрос',
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_request(
@@ -93,7 +94,7 @@ async def delete_request(
         user: Annotated[dict, Depends(get_current_user)],
 ):
     """
-    Удаляет покупку по её ID
+    Удаляет запрос по его ID
     """
     await service.delete(request_id)
     return {"message": "Запрос успешно удалён"}

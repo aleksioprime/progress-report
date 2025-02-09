@@ -9,6 +9,7 @@ from alembic import context
 from src.core.config import settings
 # Импортируем базовый класс моделей (чтобы Alembic знал о таблицах)
 from src.db.postgres import Base
+from src.models import  request, rating, comment
 
 # Загружаем конфигурацию Alembic
 config = context.config

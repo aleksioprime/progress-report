@@ -8,13 +8,13 @@ class ParameterSchema(BaseModel):
     """Схема параметра запроса"""
     id: UUID
     title: str = Field(..., description="Название параметра")
-    value: str = Field(..., description="Значение параметра")
+    value: Optional[str] = Field(None, description="Значение параметра")
 
 
 class CommentSchema(BaseModel):
     """Схема комментария к запросу"""
     id: UUID
-    author_id: UUID = Field(..., description="ID автора комментария")
+    user_id: UUID = Field(..., description="ID автора комментария")
     text: str = Field(..., description="Текст комментария")
     created_at: datetime = Field(..., description="Дата создания комментария")
 
@@ -22,14 +22,13 @@ class CommentSchema(BaseModel):
 class RatingSchema(BaseModel):
     """Схема рейтинга запроса"""
     id: UUID
-    author_id: UUID = Field(..., description="ID автора рейтинга")
+    user_id: UUID = Field(..., description="ID автора рейтинга")
     score: int = Field(..., ge=1, le=5, description="Оценка от 1 до 5")
     created_at: datetime = Field(..., description="Дата создания рейтинга")
 
 
 class RequestCreateSchema(BaseModel):
     """Схема создания запроса"""
-    user_id: UUID = Field(..., description="ID пользователя")
     name: str = Field(..., description="Название запроса")
     is_global: bool = Field(False, description="Глобальный ли запрос")
 

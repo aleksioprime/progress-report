@@ -25,14 +25,11 @@ class RequestService:
         requests = await self.repository.get_by_id(request_id)
         return requests
 
-    async def create(self, body: RequestCreateSchema, user_id: UUID) -> RequestSchema:
+    async def create(self, user_id: UUID, body: RequestCreateSchema) -> RequestSchema:
         """
         Создает новый запрос
         """
-        if not body.user_id:
-            body.user_id = user_id
-
-        request = await self.repository.create(body)
+        request = await self.repository.create(user_id, body)
         return request
 
     async def update(self, request_id: UUID, body: RequestUpdateSchema) -> RequestSchema:

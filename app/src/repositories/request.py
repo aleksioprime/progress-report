@@ -1,12 +1,15 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy import update
-from sqlalchemy.orm import joinedload
-from sqlalchemy.exc import SQLAlchemyError, NoResultFound
 from uuid import UUID
 from typing import List, Optional
 
-from src.models.request import Request, Rating
+from sqlalchemy import update
+from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import func
+from sqlalchemy.exc import SQLAlchemyError, NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.models.request import Request
+from src.models.rating import Rating
 from src.schemas.request import RequestSchema, RequestCreateSchema, RequestUpdateSchema, RequestDetailedSchema
 from src.exceptions.request import RequestException
 
@@ -26,7 +29,7 @@ class RequestRepository:
         try:
             query = (
                 select(Request)
-                .where(Request.author_id == user_id)
+                .where(Request.user_id == user_id)
             )
             result = await self.session.execute(query)
             return result.scalars().all()
@@ -35,11 +38,11 @@ class RequestRepository:
 
     async def get_by_id(self, request_id: UUID) -> Optional[RequestDetailedSchema]:
         """
-        Возвращает запрос по его ID
+        Возвращает запрос по его ID с средним рейтингом.
         """
         try:
             query = (
-                select(Request)
+                select(Request, func.coalesce(func.avg(Rating.score), 0).label("average_rating"))
                 .outerjoin(Rating, Request.id == Rating.request_id)
                 .options(
                     joinedload(Request.parameters),
@@ -50,25 +53,26 @@ class RequestRepository:
             )
             result = await self.session.execute(query)
 
-            request = result.scalars().unique().one_or_none()
+            row = result.first()  # ✅ Теперь получаем tuple (Request, average_rating)
 
-            if not request:
+            if not row:
                 raise NoResultFound(f"Запрос с ID {request_id} не найден")
 
-            request, average_rating = request
-            request.average_rating = average_rating
+            request, average_rating = row  # ✅ Теперь распаковка корректна
+            request.average_rating = average_rating  # ✅ Добавляем рейтинг в объект
+
             return request
         except SQLAlchemyError as e:
             raise RequestException("Ошибка получения запроса на генерацию репорта", str(e))
 
-    async def create(self, body: RequestCreateSchema) -> RequestSchema:
+    async def create(self, user_id: UUID, body: RequestCreateSchema) -> RequestSchema:
         """
         Создаёт новый запрос
         """
         try:
             new_request = Request(
+                user_id=user_id,
                 name=body.name,
-                author_id=body.user_id,
                 is_global=body.is_global,
                 )
             self.session.add(new_request)

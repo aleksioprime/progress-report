@@ -18,7 +18,6 @@
 - [Документация по QWEN API](https://www.alibabacloud.com/help/en/model-studio/developer-reference/use-qwen-by-calling-api)
 - [Документация по YandexGPT API](https://yandex.cloud/ru/docs/foundation-models/quickstart/yandexgpt#sdk_1)
 
-
 ## Запуск сервиса
 
 Скачайте репозиторий:
@@ -49,7 +48,14 @@ docker-compose -p report -f docker-compose.yaml up -d --build
 chmod +x app/entrypoint.sh
 ```
 
-## Работа с миграциями БЖ
+## Проверка таблиц БД
+
+Посмотрите, какие таблицы созданы в базе данных (в контейнере postgres):
+```
+docker-compose -p report exec postgres bash -c "psql -h localhost -p 5432 -U admin -d skolstream -c '\dt'"
+```
+
+## Работа с миграциями БД
 
 Каждый раз, когда происходит изменение модели (Base.metadata), нужно сгенерировать новую миграцию
 ```shell
