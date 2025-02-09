@@ -10,7 +10,9 @@ from redis.asyncio import Redis
 from src.db import redis
 from src.core.config import settings
 from src.core.logger import LOGGING
-from src.api.v1 import ping, report, auth
+from src.api.v1 import ping, report, auth, request
+from src.exceptions.handlers import register_exception_handlers
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +36,9 @@ app = FastAPI(
     default_response_class=ORJSONResponse, # Быстрая обработка JSON с ORJSON
 )
 
+# Регистрация обработчиков исключений
+register_exception_handlers(app)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_allow_origins,  # Разрешить Vue.js
@@ -49,6 +54,8 @@ app.include_router(ping.router, prefix="/api/v1", tags=["ping"])
 app.include_router(report.router, prefix="/api/v1", tags=["generate"])
 # Подключение роутера для работы с авторизацией
 app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
+# Подключение роутера для работы с запросами
+app.include_router(request.router, prefix="/api/v1", tags=["request"])
 
 
 # Точка входа в приложение

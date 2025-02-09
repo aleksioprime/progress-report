@@ -43,3 +43,43 @@ docker-compose -p report up -d --build
 ```
 docker-compose -p report -f docker-compose.yaml up -d --build
 ```
+
+Если выходит ошибка `exec /usr/src/app/entrypoint.sh: permission denied`, то нужно вручную установить флаг выполнения для entrypoint.sh в локальной системе:
+```
+chmod +x app/entrypoint.sh
+```
+
+## Работа с миграциями БЖ
+
+Каждый раз, когда происходит изменение модели (Base.metadata), нужно сгенерировать новую миграцию
+```shell
+alembic revision --autogenerate -m "описание изменений"
+```
+
+После создания миграции её нужно применить в БД (head означает "применить до последней миграции")
+```shell
+alembic upgrade head
+```
+
+Если нужно применить конкретную миграцию, можно указать её ID:
+```shell
+alembic upgrade <migration_id>
+```
+
+Если после upgrade что-то сломалось, можно откатить последнюю миграцию:
+```shell
+alembic downgrade -1
+```
+
+Чтобы откатить до конкретной версии, укажи её ID:
+```shell
+alembic downgrade <migration_id>
+```
+
+Если локально сервис развёрнут в контейнере, то необходимо выполнять миграции из Docker, например:
+```shell
+docker exec -it report-app alembic revision --autogenerate -m "init"
+docker exec -it report-app alembic upgrade head
+```
+
+В продакшене миграции, которые были созданы локально, применяются автоматически после перезапуска сервиса (инструкция в entrypoint.sh)

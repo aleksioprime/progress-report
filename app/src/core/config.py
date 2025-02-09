@@ -34,6 +34,11 @@ class DBSettings(BaseSettings):
         """ Формирует DSN строку для подключения к базе данных с использованием asyncpg """
         return f"postgresql+asyncpg://{self._base_url}"
 
+    @property
+    def alembic_url(self) -> str:
+        """ Формирует URL для Alembic миграций """
+        return f"postgresql+asyncpg://{self._base_url}"
+
 
 class RedisSettings(BaseSettings):
     """

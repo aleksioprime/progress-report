@@ -29,5 +29,8 @@ RUN CMAKE_ARGS="-DLLAMA_NATIVE=ON" pip install -r ./requirements.txt
 # Копируем код проекта
 COPY . .
 
-# Запускаем контейнер
-CMD sh entrypoint.sh
+# Делаем entrypoint.sh исполняемым
+RUN chmod +x /usr/src/app/entrypoint.sh
+
+# Используем ENTRYPOINT вместо CMD (чтобы можно было передавать аргументы при запуске)
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

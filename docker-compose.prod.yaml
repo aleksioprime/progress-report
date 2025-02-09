@@ -49,12 +49,6 @@ services:
       - ./app:/usr/src/app/
     ports:
       - "8123:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/ping"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
     depends_on:
       redis:
         condition: service_healthy
@@ -64,7 +58,7 @@ services:
   front:
     build:
       context: ./front
-      target: dev
+      target: prod
       args:
         - VITE_BACKEND_URL=${VITE_BACKEND_URL}
         - VITE_LOGGING=${VITE_LOGGING}
@@ -75,10 +69,10 @@ services:
     volumes:
       - ./front/app/src:/usr/src/app/src
     ports:
-      - "8234:5173"
+      - "80:80"
     depends_on:
       app:
-        condition: service_healthy
+        condition: service_started
 
   ollama:
     image: ollama/ollama
