@@ -1,14 +1,19 @@
 from pydantic import BaseModel, Field
-from typing import Dict, List
+from typing import List, Optional
+
+
+class ParameterSchema(BaseModel):
+    """Схема параметра запроса"""
+    title: str = Field(..., description="Название параметра")
+    value: str = Field(..., description="Значение параметра")
 
 
 class FeedbackRequest(BaseModel):
     """
     Модель запроса для генерации отзыва о студенте
     """
-    name: str = Field(..., description="Имя студента")
-    grades: Dict[str, int] = Field(..., description="Оценки студента по предметам, например: {'математика': 5, 'физика': 4}")
-    achievements: List[str] = Field(..., description="Список достижений студента, например: ['Олимпиада по математике', 'Научная конференция']")
+    context: str = Field(..., description="Контекст")
+    parameters: Optional[List[ParameterSchema]] = Field(..., description="Набор параметров")
 
 
 class ReportResponse(BaseModel):

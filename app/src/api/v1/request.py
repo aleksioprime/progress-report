@@ -48,6 +48,23 @@ async def get_request_me(
     requests = await service.get_by_user(user.user_id)
     return requests
 
+@router.get(
+    path='/requests/{request_id}',
+    summary='Получить запрос по его ID',
+    response_model=RequestDetailedSchema,
+    status_code=status.HTTP_200_OK,
+)
+async def get_request_by_id(
+    request_id: UUID,
+    service: Annotated[RequestService, Depends(get_request_service)],
+    user: Annotated[dict, Depends(get_current_user)],
+) -> RequestDetailedSchema:
+    """
+    Возвращает запрос пользователя по его ID
+    """
+    request = await service.get_by_id(request_id)
+    return request
+
 @router.post(
     path='/requests',
     summary='Создать запрос',

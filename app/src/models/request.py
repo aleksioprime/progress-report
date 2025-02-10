@@ -26,7 +26,7 @@ class Parameter(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     request_id = Column(UUID(as_uuid=True), ForeignKey("request.id"), nullable=False)
     title = Column(String(100), nullable=False)
-    value = Column(Text, nullable=False)
+    value = Column(Text, nullable=True)
 
     request = relationship("Request", back_populates="parameters")
 
@@ -39,6 +39,7 @@ class Request(Base):
     name = Column(String(100), nullable=False, unique=True)
     user_id = Column(UUID(as_uuid=True), nullable=False)
     is_global = Column(Boolean, default=False)
+    context = Column(Text, nullable=False, default="Ты учитель и пишешь краткие и конструктивные отзывы о студентах")
     comment = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

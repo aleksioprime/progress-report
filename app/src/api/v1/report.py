@@ -21,14 +21,14 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def generate_report_ollama(
-    feedback: FeedbackRequest,
+    body: FeedbackRequest,
     user: Annotated[dict, Depends(get_current_user)],
     service: ReportService = Depends(get_report_service),
 ) -> ReportResponse:
     """
     Возвращает сгенерированный текст репорта на основе входных данных
     """
-    report = await service.generate_report(feedback, provider="ollama")
+    report = await service.generate_report(body, provider="ollama")
     return report
 
 
@@ -39,14 +39,14 @@ async def generate_report_ollama(
     status_code=status.HTTP_200_OK,
 )
 async def generate_deepseek_report(
-    feedback: FeedbackRequest,
+    body: FeedbackRequest,
     user: Annotated[dict, Depends(get_current_user)],
     service: ReportResponse = Depends(get_report_service),
 ) -> ReportResponse:
     """
     Возвращает сгенерированный текст отчета на основе входных данных
     """
-    report = await service.generate_report(feedback, provider="deepseek")
+    report = await service.generate_report(body, provider="deepseek")
     return report
 
 
@@ -57,14 +57,14 @@ async def generate_deepseek_report(
     status_code=status.HTTP_200_OK,
 )
 async def generate_chatgpt_report(
-    feedback: FeedbackRequest,
+    body: FeedbackRequest,
     user: Annotated[dict, Depends(get_current_user)],
     service: ReportResponse = Depends(get_report_service),
 ) -> ReportResponse:
     """
     Возвращает сгенерированный текст отчета на основе входных данных
     """
-    report = await service.generate_report(feedback, provider="chatgpt")
+    report = await service.generate_report(body, provider="chatgpt")
     return report
 
 
@@ -75,14 +75,14 @@ async def generate_chatgpt_report(
     status_code=status.HTTP_200_OK,
 )
 async def generate_qwen_report(
-    feedback: FeedbackRequest,
+    body: FeedbackRequest,
     user: Annotated[dict, Depends(get_current_user)],
     service: ReportResponse = Depends(get_report_service),
 ) -> ReportResponse:
     """
     Возвращает сгенерированный текст отчета на основе входных данных
     """
-    report = await service.generate_report(feedback, provider="qwen")
+    report = await service.generate_report(body, provider="qwen")
     return report
 
 
@@ -93,12 +93,12 @@ async def generate_qwen_report(
     status_code=status.HTTP_200_OK,
 )
 async def generate_qwen_report(
-    feedback: FeedbackRequest,
+    body: FeedbackRequest,
     user: Annotated[dict, Depends(get_current_user)],
     service: ReportResponse = Depends(get_report_service),
 ) -> ReportResponse:
     """
     Возвращает сгенерированный текст отчета на основе входных данных
     """
-    report = await service.generate_report(feedback, provider="yandexgpt")
+    report = await service.generate_report(body, provider="yandexgpt")
     return report

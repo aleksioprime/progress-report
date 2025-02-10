@@ -14,37 +14,37 @@ class ReportService:
     def __init__(self):
         self.client = httpx.AsyncClient()
 
-    async def generate_report(self, feedback: FeedbackRequest, provider: str) -> ReportResponse:
+    async def generate_report(self, body: FeedbackRequest, provider: str) -> ReportResponse:
         """
         Генерирует отчет с использованием разных моделей AI
         """
-        prompt = (
-            f"Напиши отзыв на русском языке о студенте в одном предложении:\n"
-            f"Имя: {feedback.name}\n"
-            f"Оценки: {feedback.grades}\n"
-            f"Достижения: {feedback.achievements}"
-        )
+        feedback = { 'context': body.context }
+        feedback['prompt'] = "Используй информацию о студенте:\n"
+
+        if body.parameters:
+            for param in body.parameters:
+                feedback['prompt']+= f"- {param.title}: {param.value}\n"
 
         if provider == "ollama":
-            return await self._generate_ollama(prompt)
+            return await self._generate_ollama(feedback)
 
         elif provider in {"deepseek", "chatgpt", "qwen"}:
-            return await self._generate_openai_model(prompt, provider)
+            return await self._generate_openai_model(feedback, provider)
 
         elif provider == "yandexgpt":
-            return await self._generate_yandexgpt(prompt)
+            return await self._generate_yandexgpt(feedback)
 
         else:
             raise HTTPException(status_code=400, detail="Неподдерживаемый провайдер AI")
 
-    async def _generate_ollama(self, prompt: str) -> ReportResponse:
+    async def _generate_ollama(self, feedback: dict) -> ReportResponse:
         """
         Генерирует отчет с помощью Ollama (LLaMA 2 / Mistral)
         """
         try:
             response = await self.client.post(
                 settings.ollama.base_url,
-                json={"model": settings.ollama.model, "prompt": prompt, "stream": False},
+                json={"model": settings.ollama.model, "prompt": f"{feedback['context']}. {feedback['prompt']}", "stream": False},
                 timeout=180.0
             )
             response.raise_for_status()
@@ -62,7 +62,7 @@ class ReportService:
         except httpx.HTTPError as e:
             raise HTTPException(status_code=500, detail=f"Ошибка при запросе к Ollama: {str(e)}")
 
-    async def _generate_openai_model(self, prompt: str, provider: str) -> ReportResponse:
+    async def _generate_openai_model(self, feedback: dict, provider: str) -> ReportResponse:
         """
         Генерирует отчет с помощью DeepSeek, ChatGPT или Qwen и рассчитывает стоимость.
         """
@@ -73,8 +73,8 @@ class ReportService:
             response = client.chat.completions.create(
                 model=config.model,  # Используем модель из конфига, например, `deepseek-chat`
                 messages=[
-                    {"role": "system", "content": "Ты учитель и пишешь краткие и конструктивные отзывы о студентах."},
-                    {"role": "user", "content": prompt},
+                    {"role": "system", "content": feedback['context']},
+                    {"role": "user", "content": feedback['prompt']},
                 ],
                 stream=False
             )
@@ -108,7 +108,7 @@ class ReportService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Ошибка при запросе к {provider.capitalize()}: {str(e)}")
 
-    async def _generate_yandexgpt(self, prompt: str) -> ReportResponse:
+    async def _generate_yandexgpt(self, feedback: dict) -> ReportResponse:
         """
         Генерирует отчет с помощью YandexGPT и рассчитывает стоимость.
         """
@@ -116,8 +116,8 @@ class ReportService:
         sdk = YCloudML(folder_id=config.folder_id, auth=config.api_key)
 
         messages = [
-            {"role": "system", "text": "Ты учитель и пишешь краткие и конструктивные отзывы о студентах."},
-            {"role": "user", "text": prompt},
+            {"role": "system", "text": feedback['context']},
+            {"role": "user", "text": feedback['prompt']},
         ]
 
         try:
@@ -128,7 +128,7 @@ class ReportService:
 
             response_text = result[0].text.strip()
 
-            prompt_tokens = len(prompt.split())
+            prompt_tokens = len(feedback['prompt'].split())
             completion_tokens = len(response_text.split())
             total_tokens = prompt_tokens + completion_tokens
             units = total_tokens * config.unit_per_token
