@@ -104,7 +104,26 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y git
 ```
 
-Установите Docker-Compose
+Установите Docker-Compose:
 ```
 sudo apt install docker-compose
+```
+
+Настроить SSH-доступ:
+```
+ssh-keygen -t ed25519 -C "deploy@server" -f ~/.ssh/deploy_key
+cat ~/.ssh/deploy_key.pub
+```
+Добавить ключ в `Deploy keys` в настройках репозитория
+
+Создать файл
+```
+nano ~/.ssh/config
+```
+
+Добавить в файл:
+```
+Host github.com
+    IdentityFile ~/.ssh/deploy_key
+    User git
 ```
