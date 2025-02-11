@@ -3,8 +3,6 @@ x-app: &app
     - ./.env
   restart: always
   platform: linux/amd64
-  networks:
-    - skolstream_network
 
 services:
   postgres:
@@ -79,11 +77,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --interval 30 --cleanup
 
-
 volumes:
   postgres_volume:
   redis_volume:
-
-networks:
-  skolstream_network:
-    external: true

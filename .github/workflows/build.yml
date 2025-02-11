@@ -26,7 +26,13 @@ jobs:
 
     - name: Build and push frontend image
       run: |
-        docker build -t aleksioprime/progress-report-front:latest ./front
+        docker build --target prod \
+          --build-arg VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }} \
+          --build-arg VITE_AUTH_URL=${{ secrets.VITE_AUTH_URL }} \
+          --build-arg VITE_LOGGING=${{ secrets.VITE_LOGGING }} \
+          --build-arg VITE_OAUTH_CLIENT_ID=${{ secrets.VITE_OAUTH_CLIENT_ID }} \
+          -t aleksioprime/progress-report-front:latest ./front
+
         docker push aleksioprime/progress-report-front:latest
 
     - name: Run backend tests
