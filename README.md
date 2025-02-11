@@ -89,3 +89,17 @@ docker exec -it report-app alembic upgrade head
 ```
 
 В продакшене миграции, которые были созданы локально, применяются автоматически после перезапуска сервиса (инструкция в entrypoint.sh)
+
+## Разворачивание на сервере
+
+Установите сервер с ОС Ubuntu 22.04
+
+Выполните обновление пакетов:
+```
+sudo apt update && sudo apt upgrade -y
+```
+
+Установите Docker-Compose
+```
+sudo apt install docker-compose
+```
