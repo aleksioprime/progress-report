@@ -28,3 +28,11 @@ jobs:
       run: |
         docker build -t aleksioprime/progress-report-front:latest ./front
         docker push aleksioprime/progress-report-front:latest
+
+    - name: Run backend tests
+      run: |
+        echo "Тесты бэкенда пока отключены. Возвращаем успешный статус."
+
+    - name: Run frontent tests
+      run: |
+        echo "Тесты фронтенда пока отключены. Возвращаем успешный статус."
