@@ -99,6 +99,11 @@ docker exec -it report-app alembic upgrade head
 sudo apt update && sudo apt upgrade -y
 ```
 
+Установите GIT:
+```
+sudo apt install -y git
+```
+
 Установите Docker-Compose
 ```
 sudo apt install docker-compose

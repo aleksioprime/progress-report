@@ -23,9 +23,20 @@ jobs:
     - name: Deploy on server
       run: |
         ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-          mkdir ~/repgen
+
+          # Создаём папку, если её нет
+          mkdir -p ~/repgen
           cd ~/repgen
-          git pull origin main
+
+          # Проверяем, есть ли уже .git (иначе первый деплой)
+          if [ ! -d ".git" ]; then
+            echo "Клонируем репозиторий..."
+            git clone git@github.com:your-username/your-repo.git .
+          else
+            echo "Обновляем код..."
+            git pull origin main
+          fi
+
           docker compose -f docker-compose.prod.yaml pull
           docker compose -f docker-compose.prod.yaml up -d --remove-orphans
         EOF
