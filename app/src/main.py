@@ -10,7 +10,7 @@ from redis.asyncio import Redis
 from src.db import redis
 from src.core.config import settings
 from src.core.logger import LOGGING
-from src.api.v1 import ping, report, auth, request, parameter
+from src.api.v1 import ping, report, auth, request, parameter, comment
 from src.exceptions.handlers import register_exception_handlers
 
 
@@ -58,6 +58,8 @@ app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
 app.include_router(request.router, prefix="/api/v1", tags=["request"])
 # Подключение роутера для работы с параметрами запросов
 app.include_router(parameter.router, prefix="/api/v1", tags=["parameter"])
+# Подключение роутера для работы с комментариями запросов
+app.include_router(comment.router, prefix="/api/v1", tags=["comment"])
 
 
 # Точка входа в приложение

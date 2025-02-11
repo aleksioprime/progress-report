@@ -9,6 +9,10 @@ export class RequestResource extends ApiService {
     return this.$get(`/api/v1/requests/me`);
   }
 
+  loadGlobalRequests() {
+    return this.$get(`/api/v1/requests/global`);
+  }
+
   getRequestDetailed(id) {
     return this.$get(`/api/v1/requests/${id}`);
   }

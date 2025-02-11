@@ -50,7 +50,7 @@ export class ApiService {
       (error) => {
         const { config, response } = error;
         // Если в ответе ошибка авторизации, то перенаправляется на страницу логирования
-        if (response && response.status === 401 && !config._retry) {
+        if (response && (response.status === 401 || response.status === 403) && !config._retry) {
           logger.error("Ошибка авторизации запроса");
           config._retry = true;
           this._redirectToLogin();
@@ -64,11 +64,13 @@ export class ApiService {
   async _redirectToLogin() {
     jwtService.destroyTokens();
 
-    const currentUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-    const authUrl = `${import.meta.env.VITE_AUTH_URL}/login?needAuth=true&redirect=${encodeURIComponent(currentUrl)}`;
+    // Переход на страницу логирования в сервисе авторизации
+    // const currentUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    // const authUrl = `${import.meta.env.VITE_AUTH_URL}/login?needAuth=true&redirect=${encodeURIComponent(currentUrl)}`;
+    // window.location.href = authUrl;
 
-    logger.info("Переход на страницу входа сервиса авторизации");
-    window.location.href = authUrl;
+    // Переход на страницу логирования в текущем сервисе
+    window.location.href = '/authorization';
   }
 
   // Логирование запросов

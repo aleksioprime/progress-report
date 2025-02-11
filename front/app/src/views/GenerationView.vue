@@ -27,18 +27,33 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <div class="list-group" v-if="requestStore.requests.length">
-          <div v-for="request in requestStore.requests"
-            class="list-group-item list-group-item-action d-flex align-items-center">
-            <a href="javascript:void(0)" @click="loadRequestDetailed(request.id)">{{ request.name }}</a>
-            <div @click="showToastDelete = true" class="ms-auto icon-button"><i class="bi bi-x-square"></i></div>
-            <app-toast :show="showToastDelete" @confirm="deleteRequest(request.id)" @cancel="showToastDelete = false"
-              :isLoading="isLoadingRequest">
-              <div>Удалить запрос?</div>
-            </app-toast>
+        <div class="d-flex mb-2">
+          <div class="ms-auto form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="switchGlobalRequests"
+              v-model="visibleGlobalRequest">
+            <label class="form-check-label" for="switchGlobalRequests">
+              <span v-if="!visibleGlobalRequest">Общие запросы</span>
+              <span v-else>Мои запросы</span>
+            </label>
           </div>
         </div>
-        <div v-else>Вы пока не создали ни одного запроса</div>
+        <div v-if="requestStore.requests.length" class="scrollable-list">
+          <div class="list-group">
+            <div v-for="request in requestStore.requests"
+              class="list-group-item list-group-item-action d-flex align-items-center">
+              <a href="javascript:void(0)" @click="loadRequestDetailed(request.id)">{{ request.name }}</a>
+              <div @click="showToastDelete = true" class="ms-auto icon-button"><i class="bi bi-x-square"></i></div>
+              <app-toast :show="showToastDelete" @confirm="deleteRequest(request.id)" @cancel="showToastDelete = false"
+                :isLoading="isLoadingRequest">
+                <div>Удалить запрос?</div>
+              </app-toast>
+            </div>
+          </div>
+        </div>
+        <div v-else class="my-4">
+          <span v-if="visibleGlobalRequest">Вы пока не создали ни одного запроса</span>
+          <span v-else>Нет данных</span>
+        </div>
       </div>
     </div>
 
@@ -161,7 +176,7 @@
       </div>
 
       <!-- Кнопки сохранения запроса -->
-      <div class="d-flex" v-if="JSON.stringify(selectedOriginalRequest) != JSON.stringify(selectedRequest)">
+      <div class="d-flex" v-if="isEqualOriginalRequest">
         <div class="text-danger">Запрос изменён</div>
         <app-button class="btn btn-link m-0 p-0 ms-auto" @click="updateRequest(selectedRequest.id)"
           :isLoading="isLoadingRequest">
@@ -189,11 +204,40 @@
             @click="generateReport(el.nameElement)">Генерировать</app-button>
         </div>
         <div class="border p-2 my-2">
-          <div v-if="resultGenerateReport[`${el.nameElement}`]">{{ resultGenerateReport[`${el.nameElement}`].result }}</div>
+          <div v-if="resultGenerateReport[`${el.nameElement}`]">{{ resultGenerateReport[`${el.nameElement}`].result }}
+          </div>
           <div v-else><i>Нажмите на кнопку "Генерировать", чтобы увидеть результат...</i></div>
         </div>
-        <div v-if="resultGenerateReport[`${el.nameElement}`]">Стомость запроса: <b>{{ resultGenerateReport[`${el.nameElement}`].cost }} {{ resultGenerateReport[`${el.nameElement}`].currency.toUpperCase() }}</b></div>
+        <div v-if="resultGenerateReport[`${el.nameElement}`]">Стомость запроса: <b>{{
+          resultGenerateReport[`${el.nameElement}`].cost }} {{
+              resultGenerateReport[`${el.nameElement}`].currency.toUpperCase() }}</b></div>
       </div>
+    </div>
+
+    <div class="text-start my-3">
+      <h5>Комментарии</h5>
+
+      <!-- Блок комментариев -->
+      <app-crud-block v-model:locked="editingLocked" :requiredFields="['text']"
+        :objects="selectedRequest.comments"
+        :fetchCreate="commentStore.createComment.bind(null, selectedRequest.id)"
+        :fetchUpdate="commentStore.updateComment.bind(null, selectedRequest.id)"
+        :fetchDelete="commentStore.deleteComment.bind(null, selectedRequest.id)"
+        @update="loadComments">
+
+        <!-- Вывод существующих комментариев -->
+        <template #data="{ obj, handleUpdate, locked }">
+          <div>{{ obj.text }}</div>
+        </template>
+
+        <!-- Добавление нового комментария -->
+        <template #new="{ newObject }">
+          <div v-if="newObject">
+            <app-textarea v-model="newObject.text" name="text" placeholder="Введите текст комментария" />
+          </div>
+        </template>
+
+      </app-crud-block>
     </div>
 
   </div>
@@ -213,8 +257,14 @@ import { Offcanvas } from "bootstrap";
 import { useRequestStore } from "@/stores/request";
 const requestStore = useRequestStore();
 
+import { useCommentStore } from "@/stores/comment";
+const commentStore = useCommentStore();
+
 import { useGenerateStore } from "@/stores/generate";
 const generateStore = useGenerateStore();
+
+// Переменная флага редактирования
+const editingLocked = ref(false);
 
 // Значения по-умолчанию для добавляемых параметров
 const DEFAULT_PARAMETER = {
@@ -237,12 +287,34 @@ const generateModelElements = [
 ]
 
 // Создаваемый запрос
-const creatingRequest = ref({ ...DEFAULT_NEW_REQUEST })
+const creatingRequest = ref({ ...DEFAULT_NEW_REQUEST });
 
 // Загрузка запросов текущего пользователя
 const loadMyRequests = async () => {
   await requestStore.loadMyRequests();
 }
+
+const visibleGlobalRequest = ref(true);
+
+watch(() => visibleGlobalRequest.value, async (newValue) => {
+  if (newValue) {
+    requestStore.loadMyRequests();
+  } else {
+    requestStore.loadGlobalRequests();
+  }
+});
+
+// Сравнение данных текущего запроса и первоначального
+const isEqualOriginalRequest = computed(() => {
+  const removeComments = (obj) => {
+    if (!obj) return null; // Проверяем, чтобы obj не был null или undefined
+    const { comments, ...rest } = obj;
+    return rest;
+  };
+
+  return JSON.stringify(removeComments(selectedOriginalRequest.value)) !== JSON.stringify(removeComments(selectedRequest.value));
+});
+
 
 // РАБОТА С МОДАЛЬНЫМ ОКНОМ ДЛЯ СОЗДАНИЯ ЗАПРОСА
 
@@ -375,6 +447,14 @@ const generateReport = async (provider) => {
   resultGenerateReport.value[`${provider}`] = { ...result }
 }
 
+const loadComments = async () => {
+  const result = await commentStore.loadRequestComments(selectedRequest.value.id);
+
+  if (!result) return;
+
+  selectedRequest.value.comments = [ ...result ];
+}
+
 // Переменные элементов бокового меню
 const offcanvasRequest = ref(null);
 const offcanvasElement = ref(null);
@@ -421,5 +501,11 @@ onUnmounted(() => {
   transform: scale(1.1);
   transition: transform 0.3s;
   cursor: pointer;
+}
+
+.scrollable-list {
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 5px;
 }
 </style>

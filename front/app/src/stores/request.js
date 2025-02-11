@@ -18,6 +18,14 @@ export const useRequestStore = defineStore("request", {
       }
       return res.data
     },
+    // Загрузка общих запросов всех пользователей
+    async loadGlobalRequests() {
+      const res = await resources.request.loadGlobalRequests();
+      if (res.__state === "success") {
+        this.requests = res.data
+      }
+      return res.data
+    },
     // Загрузка детальной информации о запросе по ID
     async loadRequestDetailed(id) {
       const res = await resources.request.getRequestDetailed(id);

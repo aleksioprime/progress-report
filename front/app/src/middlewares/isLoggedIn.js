@@ -17,15 +17,9 @@ export const isLoggedIn = async ({ to }) => {
     }
   }
 
-  // Если access-токен всё ещё отсутствует → редирект на OAuth2 `/authorize/`
+  // Если access-токен всё ещё отсутствует переход на страницу авторизации
   if (!accessToken) {
-
-    const authUrl = `${import.meta.env.VITE_AUTH_URL}/o/authorize/?response_type=code`
-      + `&client_id=${import.meta.env.VITE_OAUTH_CLIENT_ID}`
-      + `&redirect_uri=http://localhost:8234/callback`;
-
-    window.location.href = authUrl;
-    return false;
+    return { name: "authorization" };
   }
 
   return true;

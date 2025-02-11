@@ -37,6 +37,20 @@ class RequestRepository:
         except SQLAlchemyError as e:
             raise RequestException("Ошибка получения запросов на генерации репортов", str(e))
 
+    async def get_global(self) -> List[RequestSchema]:
+        """
+        Возвращает список общих запросов всех пользователей
+        """
+        try:
+            query = (
+                select(Request)
+                .where(Request.is_global == True)
+            )
+            result = await self.session.execute(query)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            raise RequestException("Ошибка получения запросов на генерации репортов", str(e))
+
     async def get_by_id(self, request_id: UUID) -> Optional[RequestDetailedSchema]:
         """
         Возвращает запрос по его ID с средним рейтингом.

@@ -41,12 +41,9 @@ services:
       retries: 5
 
   app:
-    build:
-      context: ./app
+    image: aleksioprime/progress-report-app:latest
     container_name: report-app
     <<: *app
-    volumes:
-      - ./app:/usr/src/app/
     ports:
       - "8123:8000"
     depends_on:
@@ -56,18 +53,9 @@ services:
         condition: service_healthy
 
   front:
-    build:
-      context: ./front
-      target: prod
-      args:
-        - VITE_BACKEND_URL=${VITE_BACKEND_URL}
-        - VITE_LOGGING=${VITE_LOGGING}
-        - VITE_AUTH_URL=${VITE_AUTH_URL}
-        - VITE_OAUTH_CLIENT_ID=${VITE_OAUTH_CLIENT_ID}
-    <<: *app
+    image: aleksioprime/progress-report-front:latest
     container_name: report-front
-    volumes:
-      - ./front/app/src:/usr/src/app/src
+    <<: *app
     ports:
       - "80:80"
     depends_on:
@@ -82,6 +70,15 @@ services:
       - "11434:11434"
     volumes:
       - ./ollama:/root/.ollama
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: report-watchtower
+    <<: *app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --cleanup
+
 
 volumes:
   postgres_volume:

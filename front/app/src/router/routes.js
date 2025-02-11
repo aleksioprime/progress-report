@@ -10,6 +10,12 @@ export const routes = [
     },
   },
   {
+    path: "/authorization",
+    name: "authorization",
+    component: () => import("@/views/Authorization.vue"),
+    meta: {},
+  },
+  {
     path: "/callback",
     name: "callback",
     component: () => import("@/views/Callback.vue"),

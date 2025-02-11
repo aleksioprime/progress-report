@@ -49,6 +49,22 @@ async def get_request_me(
     return requests
 
 @router.get(
+    path='/requests/global',
+    summary='Получить общие запросы всех пользователей',
+    response_model=list[RequestSchema],
+    status_code=status.HTTP_200_OK,
+)
+async def get_request_global(
+    service: Annotated[RequestService, Depends(get_request_service)],
+    user: Annotated[dict, Depends(get_current_user)],
+) -> list[RequestSchema]:
+    """
+    Возвращает список общих запросов всех пользователей
+    """
+    requests = await service.get_global()
+    return requests
+
+@router.get(
     path='/requests/{request_id}',
     summary='Получить запрос по его ID',
     response_model=RequestDetailedSchema,

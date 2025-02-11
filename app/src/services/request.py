@@ -18,6 +18,13 @@ class RequestService:
         requests = await self.repository.get_by_user(user_id)
         return requests
 
+    async def get_global(self) -> list[RequestSchema]:
+        """
+        Возвращает список запросов пользователя по его ID
+        """
+        requests = await self.repository.get_global()
+        return requests
+
     async def get_by_id(self, request_id: UUID) -> RequestDetailedSchema:
         """
         Возвращает список запросов пользователя по его ID
