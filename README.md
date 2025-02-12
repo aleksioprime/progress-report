@@ -168,3 +168,10 @@ sudo crontab -e
 ```
 0 3 * * * docker exec report-front certbot renew --quiet && docker exec report-front nginx -s reload
 ```
+
+Удаление сертификатов:
+```
+docker exec -it report-front rm -rf /etc/letsencrypt/renewal/repgen.ru.conf
+docker exec -it report-front rm -rf /etc/letsencrypt/live/repgen.ru
+docker exec -it report-front rm -rf /etc/letsencrypt/archive/repgen.ru
+```
