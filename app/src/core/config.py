@@ -53,13 +53,16 @@ class SkolStreamSettings(BaseSettings):
     Конфигурация для настроек сервиса SkolStream
     """
     base_url: str = Field(alias='SKOLSTREAM_BASE_URL', default='')
-    token_url: str = Field(alias='OAUTH2_TOKEN_URL', default='')
     client_id: str = Field(alias='CLIENT_ID', default='')
     client_secret: str = Field(alias='CLIENT_SECRET', default='')
 
     @property
     def verify_url(self):
         return f"{self.base_url}/api/token/verify/"
+
+    @property
+    def token_url(self):
+        return f"{self.base_url}/o/token/"
 
 
 class OllamaSettings(BaseSettings):

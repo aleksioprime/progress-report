@@ -33,6 +33,9 @@ RUN npm run build
 
 FROM nginx:latest AS prod
 
+RUN apt update && apt install -y certbot python3-certbot-nginx
+RUN mkdir -p /var/www/certbot
+
 COPY --from=prod-builder /usr/src/app/dist /usr/share/nginx/html
 
 CMD ["nginx", "-g", "daemon off;"]

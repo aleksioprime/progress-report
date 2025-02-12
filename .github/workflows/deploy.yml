@@ -2,7 +2,7 @@ name: Deploy to Server
 
 on:
   workflow_run:
-    workflows: ["Deploy to Docker Hub"]  # Запуск после успешного билда
+    workflows: ["Deploy to Docker Hub"]
     types:
       - completed
 

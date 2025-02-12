@@ -90,91 +90,81 @@ docker exec -it report-app alembic upgrade head
 
 В продакшене миграции, которые были созданы локально, применяются автоматически после перезапуска сервиса (инструкция в entrypoint.sh)
 
-## Разворачивание на сервере
+## Подготовка сервера
 
-Установите сервер с ОС Ubuntu 22.04
+Установите сервер с ОС Ubuntu 22.04+
 
 Выполните обновление пакетов:
 ```
 sudo apt update && sudo apt upgrade -y
 ```
 
-Установите GIT:
-```
-sudo apt install -y git
-```
-
-Установите Docker-Compose:
-```
-sudo apt install docker-compose
-```
-
-Новая версия установки:
+Установите Docker:
 ```
 sudo apt update && sudo apt install -y docker.io
 ```
 
-Установка docker compose как плагина:
+Установите Compose-плагин:
 ```
 DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
 mkdir -p $DOCKER_CONFIG/cli-plugins
 curl -SL https://github.com/docker/compose/releases/download/v2.32.4/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
-```
-```
 chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
 ```
 
+Проверьте установку
 ```
 docker compose version
 ```
 
-Настройте SSH-доступ:
-```
-ssh-keygen -t ed25519 -C "deploy@server" -f ~/.ssh/deploy_key
-cat ~/.ssh/deploy_key.pub
-```
-Добавьте ключ в `Deploy keys` в настройках репозитория
+## Переменные окружения
 
-Создайте файл конфигурации:
+Переменные окружения берутся из репозитория.
+
+Для загрузки контейнеров в Docker Hub используется:
 ```
-nano ~/.ssh/config
+DOCKER_HUB_USERNAME=<логин пользователя Docker Hub>
+DOCKER_HUB_ACCESS_TOKEN=<access-токен, который был выдан в DockerHub>
 ```
 
-Добавьте в файл настройки:
+Для деплоя приложения из репозитория на сервер используется:
 ```
-Host github.com
-    IdentityFile ~/.ssh/deploy_key
-    User git
+SERVER_HOST=<IP-адрес сервера>
+SERVER_SSH_KEY=<Приватный ключ для подключения к серверу по SSH>
+SERVER_USER=<Имя пользователя сервера>
 ```
 
-Проверьте доступ:
+Для билда фронтенда используется:
 ```
-ssh -T git@github.com
+VITE_AUTH_URL=<URL-адрес сервиса авторизации>
+VITE_BACKEND_URL=<URL-адрес бэкенда текущего сервиса>
+VITE_LOGGING=<Переменная логирования>
+VITE_OAUTH_CLIENT_ID=<ID приложения, зарегистрированного в OAUTH2.0-сервисе>
 ```
+
+Для бэкенда создаётся переменная `ENV_VARS`, куда записываются все переменные из `.env.example`, кроме переменных для фронтенда
 
 ## Добавление бесплатного SSL-сертификата
 
-Установите модуль CertBot:
-```
-sudo apt install certbot python3-certbot-nginx -y
-```
+В контейнер фронтенда добавлен CertBot, с помощью которого происходит регистрация сертификата
 
 Проверьте установку:
 ```
-certbot --version
+docker exec -it report-front certbot --version
 ```
 
 Запустите CertBot для получения сертификатов
 ```
-sudo certbot --nginx -d repgen.ru -d www.repgen.ru
+docker exec -it report-front certbot --nginx -d repgen.ru -d www.repgen.ru
+ls -l /etc/letsencrypt/live/repgen.ru/
 ```
 
-Добавьте автообновление сертификатов (каждые 90 дней). Для этого открываем crontab
+Добавьте автообновление сертификатов (каждые 90 дней). Для этого откройте crontab:
 ```
 sudo crontab -e
 ```
 
 Добавьте строку:
 ```
-0 3 * * * certbot renew --quiet && docker restart report-front
+0 3 * * * docker exec report-front certbot renew --quiet && docker exec report-front nginx -s reload
 ```
