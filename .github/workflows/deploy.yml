@@ -39,7 +39,7 @@ jobs:
           # Если nginx.conf НЕ существует, скачиваем его
           if [ ! -f ~/repgen/nginx/nginx.conf ]; then
             echo "Файл nginx.conf не найден. Скачиваем..."
-            curl -o ~/repgen/nginx/nginx.conf https://raw.githubusercontent.com/aleksioprime/progress-report/main/nginx/nginx.conf
+            curl -o ~/repgen/nginx/nginx.conf https://raw.githubusercontent.com/aleksioprime/progress-report/main/front/nginx/nginx.conf
           else
             echo "Файл nginx.conf уже существует. Не скачиваем."
           fi
