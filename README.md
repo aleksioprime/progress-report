@@ -132,3 +132,5 @@ Host github.com
 ```
 ssh -T git@github.com
 ```
+
+## Добавление бесплатного SSL-сертификата

@@ -22,7 +22,7 @@ const authorization = () => {
 
   const authUrl = `${import.meta.env.VITE_AUTH_URL}/o/authorize/?response_type=code`
     + `&client_id=${import.meta.env.VITE_OAUTH_CLIENT_ID}`
-    + `&redirect_uri=http://localhost:8234/callback`;
+    + `&redirect_uri=${import.meta.env.VITE_BACKEND_URL}/callback`;
 
   window.location.href = authUrl;
 }

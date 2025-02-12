@@ -22,7 +22,7 @@ onMounted(async () => {
   }
 
   try {
-    const response = await fetch("http://localhost:8123/api/v1/auth/exchange_code", {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/exchange_code`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
