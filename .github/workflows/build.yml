@@ -6,12 +6,36 @@ on:
       - main
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Run backend tests
+      run: |
+        echo "Тесты бэкенда пока отключены. Возвращаем успешный статус."
+
+    - name: Run frontend tests
+      run: |
+        echo "Тесты фронтенда пока отключены. Возвращаем успешный статус."
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    outputs:
+      build_backend: ${{ steps.check_changes.outputs.BUILD_BACKEND }}
+      build_frontend: ${{ steps.check_changes.outputs.BUILD_FRONTEND }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -19,12 +43,41 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+    - name: Check changed files
+      id: check_changes
+      run: |
+        echo "Checking changed files..."
+        CHANGED_BACKEND=$(git diff --name-only HEAD^ HEAD | grep -E '^app/' || true)
+        CHANGED_FRONTEND=$(git diff --name-only HEAD^ HEAD | grep -E '^front/' || true)
+
+        if [[ -n "$CHANGED_BACKEND" ]]; then
+          echo "Backend changed"
+          echo "BUILD_BACKEND=true" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=true" >> $GITHUB_OUTPUT
+        else
+          echo "Backend not changed"
+          echo "BUILD_BACKEND=false" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=false" >> $GITHUB_OUTPUT
+        fi
+
+        if [[ -n "$CHANGED_FRONTEND" ]]; then
+          echo "Frontend changed"
+          echo "BUILD_FRONTEND=true" >> $GITHUB_ENV
+          echo "BUILD_FRONTEND=true" >> $GITHUB_OUTPUT
+        else
+          echo "Frontend not changed"
+          echo "BUILD_FRONTEND=false" >> $GITHUB_ENV
+          echo "BUILD_FRONTEND=false" >> $GITHUB_OUTPUT
+        fi
+
     - name: Build and push backend image
+      if: steps.check_changes.outputs.BUILD_BACKEND == 'true'
       run: |
         docker build -t aleksioprime/progress-report-app:latest ./app
         docker push aleksioprime/progress-report-app:latest
 
     - name: Build and push frontend image
+      if: steps.check_changes.outputs.BUILD_FRONTEND == 'true'
       run: |
         docker build --target prod \
           --build-arg VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }} \
@@ -34,11 +87,3 @@ jobs:
           -t aleksioprime/progress-report-front:latest ./front
 
         docker push aleksioprime/progress-report-front:latest
-
-    - name: Run backend tests
-      run: |
-        echo "Тесты бэкенда пока отключены. Возвращаем успешный статус."
-
-    - name: Run frontent tests
-      run: |
-        echo "Тесты фронтенда пока отключены. Возвращаем успешный статус."
