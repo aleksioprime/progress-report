@@ -34,7 +34,13 @@ jobs:
           echo "${{ secrets.ENV_VARS }}" > ~/repgen/.env
           echo "Файл .env загружен на сервер"
 
-          curl -o ~/repgen/docker-compose.prod.yaml https://raw.githubusercontent.com/aleksioprime/progress-report/main/docker-compose.prod.yaml
+          # Если nginx.conf НЕ существует, скачиваем его
+          if [ ! -f ~/repgen/nginx/nginx.conf ]; then
+            echo "Файл nginx.conf не найден. Скачиваем..."
+            curl -o ~/repgen/nginx/nginx.conf https://raw.githubusercontent.com/aleksioprime/progress-report/main/nginx/nginx.conf
+          else
+            echo "Файл nginx.conf уже существует. Не скачиваем."
+          fi
 
           docker compose -f docker-compose.prod.yaml down
           docker compose -f docker-compose.prod.yaml pull
