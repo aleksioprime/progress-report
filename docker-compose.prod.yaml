@@ -58,6 +58,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - /etc/letsencrypt/live/repgen.ru/fullchain.pem:/etc/nginx/ssl/fullchain.pem
+      - /etc/letsencrypt/live/repgen.ru/privkey.pem:/etc/nginx/ssl/privkey.pem
+      - /etc/letsencrypt/live/repgen.ru/chain.pem:/etc/nginx/ssl/chain.pem
       - /etc/nginx/custom/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       app:
