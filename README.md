@@ -109,6 +109,11 @@ sudo apt install -y git
 sudo apt install docker-compose
 ```
 
+Новая версия установки:
+```
+sudo apt update && sudo apt install -y docker.io
+```
+
 Настройте SSH-доступ:
 ```
 ssh-keygen -t ed25519 -C "deploy@server" -f ~/.ssh/deploy_key
@@ -145,56 +150,9 @@ sudo apt install certbot python3-certbot-nginx -y
 certbot --version
 ```
 
-Временно остановите контейнер:
-```
-docker stop report-front
-```
-
 Запустите CertBot для получения сертификатов
 ```
 sudo certbot --nginx -d repgen.ru -d www.repgen.ru
-```
-
-Добавляем в контейнер переменные:
-```yaml
-volumes:
-      - /etc/letsencrypt/live/repgen.ru/fullchain.pem:/etc/nginx/ssl/fullchain.pem
-      - /etc/letsencrypt/live/repgen.ru/privkey.pem:/etc/nginx/ssl/privkey.pem
-      - /etc/letsencrypt/live/repgen.ru/chain.pem:/etc/nginx/ssl/chain.pem
-      - /etc/nginx/custom/nginx.conf:/etc/nginx/conf.d/default.conf
-```
-
-Измените `/etc/nginx/custom/nginx.conf`:
-```
-server {
-    listen 80;
-    server_name repgen.ru www.repgen.ru;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name repgen.ru www.repgen.ru;
-
-    ssl_certificate /etc/nginx/ssl/fullchain.pem;
-    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
-    ssl_trusted_certificate /etc/nginx/ssl/chain.pem;
-
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://report-app:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-
-    error_page 404 /index.html;
 ```
 
 Добавьте автообновление сертификатов (каждые 90 дней). Для этого открываем crontab

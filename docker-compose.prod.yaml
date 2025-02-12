@@ -61,8 +61,11 @@ services:
       - /etc/letsencrypt/live/repgen.ru/fullchain.pem:/etc/nginx/ssl/fullchain.pem
       - /etc/letsencrypt/live/repgen.ru/privkey.pem:/etc/nginx/ssl/privkey.pem
       - /etc/letsencrypt/live/repgen.ru/chain.pem:/etc/nginx/ssl/chain.pem
-      - /etc/nginx/custom/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ~/repgen/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - /var/www/certbot:/var/www/certbot
     depends_on:
+      certbot:
+        condition: service_completed_successfully
       app:
         condition: service_started
 
@@ -83,6 +86,25 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --interval 30 --cleanup
 
+  certbot:
+    image: certbot/certbot
+    container_name: report-certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    entrypoint: sh -c "certbot certonly --webroot -w /var/www/certbot --email aleksioprime@gmail.com --agree-tos --no-eff-email --staple-ocsp -d repgen.ru -d www.repgen.ru && sleep 999999999"
+
+  certbot-renew:
+    image: certbot/certbot
+    container_name: report-certbot-renew
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
+    entrypoint: sh -c "while true; do certbot renew --quiet && sleep 12h; done"
+
+
 volumes:
   postgres_volume:
   redis_volume:
+  certbot_challenges:
