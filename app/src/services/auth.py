@@ -37,15 +37,15 @@ class AuthService:
         """
         credentials = base64.b64encode(f"{settings.skolstream.client_id}:{settings.skolstream.client_secret}".encode()).decode()
 
-        url = "http://backend:8000/o/token/"
+        url = settings.skolstream.token_url
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": f"Basic {credentials}",
         }
         data = {
             "grant_type": "authorization_code",
-            "redirect_uri": "http://localhost:8234/callback",
-            "code": code if isinstance(code, str) else str(code),  # Преобразуем в строку
+            "redirect_uri": f"{settings.base_url}/callback",
+            "code": code if isinstance(code, str) else str(code),
         }
 
         # Логируем перед отправкой запроса

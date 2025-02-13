@@ -5,5 +5,5 @@ export const authClient = axios.create({
 });
 
 export const backendClient = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: import.meta.env.VITE_SERVICE_URL,
 });

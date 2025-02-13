@@ -62,7 +62,11 @@ class SkolStreamSettings(BaseSettings):
 
     @property
     def token_url(self):
-        return f"{self.base_url}/o/token/"
+        return f"{self.base_url}/o/token"
+
+    @property
+    def callback(self):
+        return f"{self.base_url}/callback"
 
 
 class OllamaSettings(BaseSettings):
@@ -135,6 +139,8 @@ class Settings(BaseSettings):
 
     default_host: str = "0.0.0.0"
     default_port: int = 8000
+
+    base_url: str = Field(alias="SERVICE_BASE_URL", default="")
     cors_allow_origins_str: str = Field(alias="CORS_ALLOW_ORIGINS", default="")
 
     @property
