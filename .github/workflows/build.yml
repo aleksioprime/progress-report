@@ -76,9 +76,9 @@ jobs:
         docker build -t aleksioprime/progress-report-app:latest ./app
         docker push aleksioprime/progress-report-app:latest
 
-    - name: Export FRONT_ENV_VARS
+    - name: Export ENV_VARS
       run: |
-        echo "${{ secrets.ENV_VARS }}" | while IFS= read -r line; do
+        printf "%s\n" "${{ secrets.ENV_VARS }}" | while IFS= read -r line; do
           if [[ ! -z "$line" ]]; then
             echo "$line" >> $GITHUB_ENV
           fi
