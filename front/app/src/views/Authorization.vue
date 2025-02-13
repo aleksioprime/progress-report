@@ -1,9 +1,11 @@
 <template>
   <div>
+
     <h1>Войдите в систему</h1>
     <div>
       <app-button class="btn btn-success" @click="authorization">Войти через SkolStream</app-button>
     </div>
+
   </div>
 </template>
 
