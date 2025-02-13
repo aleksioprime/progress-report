@@ -1,5 +1,5 @@
 <template>
-  <h1 class="mb-3">Генерация репортов</h1>
+  <h1 class="mb-3">Генерация progress-репортов</h1>
 
   <div class="my-2">
 
