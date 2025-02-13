@@ -79,7 +79,7 @@ jobs:
     - name: Export ENV_VARS
       run: |
         printf "%s\n" "${{ secrets.ENV_VARS }}" | while IFS= read -r line; do
-          if [[ ! -z "$line" ]]; then
+          if [[ ! -z "$line" && "$line" != \#* ]]; then
             echo "$line" >> $GITHUB_ENV
           fi
         done
