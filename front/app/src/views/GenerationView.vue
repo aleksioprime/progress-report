@@ -248,11 +248,18 @@
     </div>
 
   </div>
+
+  <div>
+    <app-button class="btn btn-link" @click="logout">Выйти из аккаунта</app-button>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Offcanvas } from "bootstrap";
+
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 import { useRequestStore } from "@/stores/request";
 const requestStore = useRequestStore();
@@ -262,6 +269,9 @@ const commentStore = useCommentStore();
 
 import { useGenerateStore } from "@/stores/generate";
 const generateStore = useGenerateStore();
+
+import { useAuthStore } from "@/stores/auth";
+const authStore = useAuthStore();
 
 // Переменная флага редактирования
 const editingLocked = ref(false);
@@ -453,6 +463,11 @@ const loadComments = async () => {
   if (!result) return;
 
   selectedRequest.value.comments = [ ...result ];
+}
+
+const logout = async () => {
+  await authStore.logout();
+  router.push({ name: "authorization" });
 }
 
 // Переменные элементов бокового меню

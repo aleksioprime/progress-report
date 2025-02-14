@@ -9,6 +9,7 @@ export const isLoggedIn = async ({ to }) => {
 
   // Если токен отсутствует или невалиден → пробуем обновить
   if (!accessToken || !authStore.isAuthenticated) {
+    if (!jwtService.getRefreshToken()) return { name: "authorization" };
     try {
       console.log("Attempting token refresh...");
       await authStore.refresh(); // Обновляем токен
