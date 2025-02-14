@@ -16,7 +16,7 @@ async def ping():
     """
     Эндпоинт для проверки работы web-сервера
     """
-    logger.disabled = True
+    # logger.disabled = True
     return {"status": "ok", "message": "Server is up and running"}
 
 

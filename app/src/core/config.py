@@ -62,7 +62,7 @@ class SkolStreamSettings(BaseSettings):
 
     @property
     def token_url(self):
-        return f"{self.base_url}/o/token"
+        return f"{self.base_url}/o/token/"
 
     @property
     def callback(self):
