@@ -66,12 +66,25 @@ class ReportService:
         """
         Генерирует отчет с помощью DeepSeek, ChatGPT или Qwen и рассчитывает стоимость.
         """
-        config = getattr(settings, provider)  # Достаем настройки из settings (например, settings.deepseek)
-        client = OpenAI(api_key=config.api_key, base_url=getattr(config, "base_url", None))
+        config = getattr(settings, provider)
+
+        if provider == "chatgpt":
+            proxy_url = "http://bo7j4b8oet:3Xdfbzq542@195.26.226.75:52998"
+            transport = httpx.HTTPTransport(proxy=proxy_url)
+            http_client = httpx.Client(transport=transport)
+        else:
+            http_client = httpx.Client()
+
+
+        client = OpenAI(
+            api_key=config.api_key,
+            base_url=getattr(config, "base_url", None),
+            http_client=http_client
+            )
 
         try:
             response = client.chat.completions.create(
-                model=config.model,  # Используем модель из конфига, например, `deepseek-chat`
+                model=config.model,
                 messages=[
                     {"role": "system", "content": feedback['context']},
                     {"role": "user", "content": feedback['prompt']},
