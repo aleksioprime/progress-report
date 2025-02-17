@@ -426,7 +426,7 @@ const deleteRequest = async (id) => {
 
 // Добавление параметра запроса
 const addNewParameter = () => {
-  selectedRequest.value.parameters.push(DEFAULT_PARAMETER);
+  selectedRequest.value.parameters.push({ ...DEFAULT_PARAMETER });
 }
 
 // Удаление параметра запроса
