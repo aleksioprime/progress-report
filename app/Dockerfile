@@ -32,5 +32,4 @@ COPY . .
 # Делаем entrypoint.sh исполняемым
 RUN chmod +x /usr/src/app/entrypoint.sh
 
-# Используем ENTRYPOINT вместо CMD (чтобы можно было передавать аргументы при запуске)
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
